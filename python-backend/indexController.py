@@ -8,3 +8,8 @@ def addToIndex(embedding):
     index = getIndex()
     index.add(embedding)
     faiss.write_index(index, "data.index")
+
+def searchIndex(embedding):
+    index = getIndex()
+    distances, idx = index.search(embedding, 50)
+    return [idx, distances]
