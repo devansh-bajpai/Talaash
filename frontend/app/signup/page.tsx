@@ -163,7 +163,7 @@ export default function SignupPage() {
       if (!signupRes.ok) {
         throw new Error(signupData?.message || "Signup failed");
       }
-
+///////////////////////////////////////////////////////////////////////////
       // 2️⃣ AUTO-LOGIN
       const loginRes = await fetch(`${API_BASE}/auth/login`, {
         method: "POST",

@@ -1,145 +1,86 @@
-// backend/src/index.ts
-import "dotenv/config";
-import express, { Request, Response } from "express";
+import express from "express";
 import cors from "cors";
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
+
+import { connectDB } from "./db";
 import { createUser, findUserByEmail, findUserById } from "./users";
+
+dotenv.config();
 
 const app = express();
 
-const PORT = process.env.PORT || 8000;
-const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-key-change-me";
-
+/* ---------------- GLOBAL MIDDLEWARE ---------------- */
 app.use(express.json());
 
-// Allow frontend at localhost:3000
-app.use(
-  cors({
-    origin: ["http://localhost:3000", "http://127.0.0.1:3000"],
-    credentials: false,
-  })
-);
-
-// Simple health check
-app.get("/", (_req: Request, res: Response) => {
-  res.json({ message: "TS backend is running" });
+// ⭐ OVERRIDE CORS EXACTLY FOR FRONTEND (IMPORTANT)
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  next();
 });
 
-// SIGNUP
-app.post("/auth/signup", async (req: Request, res: Response) => {
+// You can still keep cors(), it's safe
+app.use(cors({ origin: "http://localhost:3000" }));
+
+/* ---------------- CONNECT TO DB ---------------- */
+connectDB();
+
+const JWT_SECRET = process.env.JWT_SECRET as string;
+
+/* ---------------- SIGNUP ---------------- */
+app.post("/auth/signup", async (req, res) => {
   try {
-    const { name, email, password } = req.body as {
-      name?: string;
-      email?: string;
-      password?: string;
-    };
+    const { name, email, password } = req.body;
 
-    if (!name || !email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Name, email and password are required" });
-    }
+    const user = await createUser(name, email, password);
 
-    if (password.length < 6) {
-      return res
-        .status(400)
-        .json({ message: "Password must be at least 6 characters" });
-    }
-
-    await createUser(name, email, password);
-
-    return res
-      .status(201)
-      .json({ message: "User created successfully" });
-  } catch (err: any) {
-    if (err.message === "Email already registered") {
-      return res.status(400).json({ message: err.message });
-    }
-    console.error("Signup error:", err);
-    return res
-      .status(500)
-      .json({ message: "Something went wrong on signup" });
+    const token = jwt.sign({ id: user._id }, JWT_SECRET);
+    res.json({ message: "Signup successful", token });
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
   }
 });
 
-// LOGIN
-app.post("/auth/login", async (req: Request, res: Response) => {
-  try {
-    const { email, password } = req.body as {
-      email?: string;
-      password?: string;
-    };
+/* ---------------- LOGIN ---------------- */
+app.post("/auth/login", async (req, res) => {
+  const { email, password } = req.body;
 
-    if (!email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Email and password are required" });
-    }
+  const user = await findUserByEmail(email);
+  if (!user) return res.status(404).json({ error: "User not found" });
 
-    const user = findUserByEmail(email);
-    if (!user) {
-      return res
-        .status(401)
-        .json({ message: "Incorrect email or password" });
-    }
+  const isMatch = await bcrypt.compare(password, user.passwordHash);
+  if (!isMatch) return res.status(401).json({ error: "Invalid password" });
 
-    const valid = await bcrypt.compare(password, user.passwordHash);
-    if (!valid) {
-      return res
-        .status(401)
-        .json({ message: "Incorrect email or password" });
-    }
-
-    const token = jwt.sign({ sub: String(user.id) }, JWT_SECRET, {
-      expiresIn: "60m",
-    });
-
-    return res.json({ token });
-  } catch (err) {
-    console.error("Login error:", err);
-    return res
-      .status(500)
-      .json({ message: "Something went wrong on login" });
-  }
+  const token = jwt.sign({ id: user._id }, JWT_SECRET);
+  res.json({ message: "Login successful", token });
 });
 
-// GET CURRENT USER
-app.get("/me", (req: Request, res: Response) => {
+/* ---------------- AUTH MIDDLEWARE ---------------- */
+function authMiddleware(req: any, res: any, next: any) {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) return res.status(401).json({ error: "No token" });
+
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ message: "Not authenticated" });
-    }
-
-    const token = authHeader.split(" ")[1];
-
-    const payload = jwt.verify(token as string, JWT_SECRET) as { sub?: string };
-
-    
-
-    const userId = payload.sub ? Number(payload.sub) : undefined;
-
-    if (!userId) {
-      return res.status(401).json({ message: "Invalid token" });
-    }
-
-    const user = findUserById(userId);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    return res.json({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-    });
-  } catch (err) {
-    console.error("ME error:", err);
-    return res.status(401).json({ message: "Invalid token" });
+    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    req.userId = decoded.id;
+    next();
+  } catch {
+    res.status(401).json({ error: "Invalid token" });
   }
+}
+
+/* ---------------- PROTECTED ROUTE ---------------- */
+app.get("/me", authMiddleware, async (req: any, res) => {
+  const user = await findUserById(req.userId);
+
+  if (!user) return res.status(404).json({ error: "User not found" });
+
+  res.json({ id: user._id, name: user.name, email: user.email });
 });
 
-app.listen(PORT, () => {
-  console.log(`Auth backend listening on http://localhost:${PORT}`);
+/* ---------------- SERVER ---------------- */
+app.listen(8000, () => {
+  console.log("Server running on port http://localhost:8000");
 });

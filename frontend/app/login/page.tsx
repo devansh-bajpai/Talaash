@@ -18,14 +18,30 @@ export default function LoginPage() {
     setIsSubmitting(true);
 
     const formData = new FormData(e.currentTarget);
-    const email = formData.get("email") as string;
+    const role = (formData.get("role") as string) || "detective";
+    const idOrEmail = formData.get("email") as string; // used as email for detective, ID for control center
     const password = formData.get("password") as string;
 
     try {
+      // 🟦 CONTROL CENTER FLOW (no backend, fixed credentials)
+      if (role === "control") {
+        const CONTROL_ID = "UnderControl2025";
+        const CONTROL_PASSWORD = "2025UC";
+
+        if (idOrEmail === CONTROL_ID && password === CONTROL_PASSWORD) {
+          // optional: you could set a different cookie if you want
+          router.push("/control/dashboard");
+          return;
+        }
+
+        throw new Error("Invalid Control Center credentials");
+      }
+////////////////////////////////////////////////////////////////////////////////////
+      // 🟩 DETECTIVE FLOW (normal user login via backend)
       const res = await fetch(`${API_BASE}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: idOrEmail, password }),
       });
 
       const data = await res.json();
@@ -38,6 +54,7 @@ export default function LoginPage() {
         throw new Error("No token returned from server");
       }
 
+      // save token cookie for detective
       document.cookie = `token=${data.token}; path=/;`;
 
       const redirectTo = searchParams.get("from") || "/dashboard";
@@ -63,17 +80,39 @@ export default function LoginPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Role selector */}
+          <div>
+            <label
+              htmlFor="role"
+              className="block text-sm font-medium text-slate-200 mb-1"
+            >
+              Login as
+            </label>
+            <select
+              id="role"
+              name="role"
+              defaultValue="detective"
+              className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            >
+              <option value="detective">Detective</option>
+              <option value="control">Control Center</option>
+            </select>
+            <p className="mt-1 text-xs text-slate-400">
+              
+            </p>
+          </div>
+
           <div>
             <label
               htmlFor="email"
               className="block text-sm font-medium text-slate-200 mb-1"
             >
-              Email
+              Email / ID
             </label>
             <input
               id="email"
               name="email"
-              type="email"
+              type="text"
               required
               className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             />
