@@ -12,4 +12,4 @@ def addToIndex(embedding):
 def searchIndex(embedding):
     index = getIndex()
     distances, idx = index.search(embedding, 50)
-    return [idx, distances]
+    return [idx,what all topisc distances]
