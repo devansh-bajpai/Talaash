@@ -1,3 +1,4 @@
+// backend/src/index.ts
 import express from "express";
 import cors from "cors";
 import jwt from "jsonwebtoken";
@@ -5,7 +6,14 @@ import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 
 import { connectDB } from "./db";
-import { createUser, findUserByEmail, findUserById } from "./users";
+import {
+  createUser,
+  findUserByEmail,
+  findUserById,
+} from "./userService";
+
+import casesRouter from "./cases";
+import detectivesRouter from "./detectiveRoutes";
 
 dotenv.config();
 
@@ -15,14 +23,20 @@ const app = express();
 app.use(express.json());
 
 // ⭐ OVERRIDE CORS EXACTLY FOR FRONTEND (IMPORTANT)
+
+
+app.use(
+  cors({
+    origin: "http://localhost:3000",   // your frontend
+    credentials: true,                 // REQUIRED for cookies/auth
+  })
+);
+
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header("Access-Control-Allow-Credentials", "true");
   next();
 });
 
-// You can still keep cors(), it's safe
-app.use(cors({ origin: "http://localhost:3000" }));
 
 /* ---------------- CONNECT TO DB ---------------- */
 connectDB();
@@ -79,6 +93,10 @@ app.get("/me", authMiddleware, async (req: any, res) => {
 
   res.json({ id: user._id, name: user.name, email: user.email });
 });
+
+/* ---------------- NEW API ROUTES ---------------- */
+app.use("/api", casesRouter);
+app.use("/api", detectivesRouter);
 
 /* ---------------- SERVER ---------------- */
 app.listen(8000, () => {
