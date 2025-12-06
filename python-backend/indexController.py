@@ -6,8 +6,10 @@ def getIndex():
 
 def addToIndex(embedding):
     index = getIndex()
+    new_id = index.ntotal
     index.add(embedding)
     faiss.write_index(index, "data.index")
+    return new_id
 
 def searchIndex(embedding):
     index = getIndex()
