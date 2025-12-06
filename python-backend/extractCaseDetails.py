@@ -9,7 +9,6 @@ params = [
 ]
 
 
-
 def extract_case_details(text):
     prompt = f"""
 You are an information extraction model.

@@ -13,10 +13,30 @@ db = client["talaash"]
 collection = db["cases"]
 
 
-class Case(BaseModel):
-    name: str
-    description: str
+""""
+    title
+    description
+    source
+    assigned to
+    status
+    case id
+    crime type
+    weapons
+"""
 
+
+class Case(BaseModel):
+    title: str
+    description: str
+    crime_type: str
+    weapons: str
+    
+
+
+
+# For searching similar cases
+class CaseDescription(BaseModel):
+    description: str
 
 
 @asynccontextmanager
@@ -33,8 +53,8 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 @app.post('/similar')
-def getSimilarCases(case: Case):
-    case_description = case.description
+def getSimilarCases(caseDescription: CaseDescription):
+    case_description = caseDescription.description
     case_dict = extract_case_details(case_description)
 
     if(case_dict == None):
@@ -71,5 +91,15 @@ def addEntryToDatabase(case: Case):
     
     data = case.model_dump()
     data["cid"] = new_id
+
+
+
+    data["source"] = "manual"
+    data["assigned_to"] = None
+    data["status"] = "PENDING"
+    from datetime import datetime
+    data["timestamp"] = datetime.now() 
+
+
 
     collection.insert_one(data)
