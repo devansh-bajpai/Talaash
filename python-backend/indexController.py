@@ -11,5 +11,5 @@ def addToIndex(embedding):
 
 def searchIndex(embedding):
     index = getIndex()
-    distances, idx = index.search(embedding, 50)
+    distances, idx = index.search(embedding, 5)
     return [idx, distances]

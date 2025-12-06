@@ -1,4 +1,8 @@
-params = ["name", "age", "place", "crime_type"]
+params = [
+    "type", "location", "time", "date", "injuries", "deathcount",
+    "weapons", "clues", "witness_count", "motive", "victim_type", "suspect_type"
+]
+
 def dictToString(d):
     """"Returns a semicolon separated string made from the dictionary having keys from params list"""
     

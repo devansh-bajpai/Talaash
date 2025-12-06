@@ -23,11 +23,6 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-# @app.post("/haha")
-# def home(case: Case):
-#     return case.description + "hakgufebgha"
-
-
 @app.post('/similar')
 def getSimilarCases(case: Case):
     case_description = case.description
@@ -42,9 +37,6 @@ def getSimilarCases(case: Case):
     embedding = model.encode([case_string])
 
     idx, distances = searchIndex(embedding)    
-
-    # print(idx)
-    # print(distances)
 
     return {
         "indices": idx.flatten().tolist(),
