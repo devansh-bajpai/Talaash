@@ -7,7 +7,7 @@ import bcrypt from "bcryptjs";
 import { connectDB } from "./db";
 import { createUser, findUserByEmail, findUserById } from "./userService";
 import casesRouter from "./cases";
-import detectiveRouter from "./routes/detectiveRoutes";  // ⭐ ROUTER IMPORT
+import detectivesRouter from "./users";  // ⭐ ROUTER IMPORT
 
 dotenv.config();
 
@@ -90,7 +90,7 @@ app.get("/me", authMiddleware, async (req: any, res) => {
 
 /* ---------------- NEW API ROUTES ---------------- */
 app.use("/api", casesRouter);
-app.use("/api/detective", detectiveRouter);
+app.use("/api", detectivesRouter);
 
 /* ----------------------------------------------------- */
 

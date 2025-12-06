@@ -57,7 +57,7 @@ export default function LoginPage() {
       // save token cookie for detective
       document.cookie = `token=${data.token}; path=/;`;
 
-      const redirectTo = searchParams.get("from") || "/dashboard";
+      const redirectTo = searchParams.get("from") || "/detective/dashboard";
       router.push(redirectTo);
     } catch (err: any) {
       setError(err.message || "Something went wrong");

@@ -185,7 +185,7 @@ export default function SignupPage() {
       document.cookie = `token=${loginData.token}; path=/;`;
 
       // 4️⃣ REDIRECT TO DASHBOARD
-      router.push("/dashboard");
+      router.push("/detective/dashboard");
     } catch (err: any) {
       setError(err.message || "Something went wrong");
     } finally {
