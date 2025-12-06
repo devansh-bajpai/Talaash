@@ -1,35 +1,75 @@
-// backend/src/models/Case.ts
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, Document, Model } from "mongoose";
+
+export type CaseStatus = "PENDING" | "RUNNING" | "COMPLETED";
 
 export interface ICase extends Document {
-  caseId: string;          // "CASE-2025-001"
-  title: string;
-  description: string;
-  source: string;          // e.g. "Station Alpha"
-  assignedTo?: string | null; // user _id as string, or null if unassigned
-  status: string;          // e.g. "RUNNING", "RESOLVED"
-  crimeType: string;       // e.g. "Robbery"
-  weapons: string[];       // array of weapon names/strings
+  caseId: string;          // human-readable case code
+  title: string;           // short case name
+  description: string;     // detailed report
+  source: string;          // source station / department
+  assignedTo?: string;     // detective ID
+  status: CaseStatus;      // case stage
 
-  // timestamps added automatically by mongoose
-  createdAt?: Date;
-  updatedAt?: Date;
+  // NEW FIELDS
+  crimeType?: string;      // e.g. "robbery", "fraud", "homicide"
+  weapons?: string[];      // e.g. ["gun", "knife"]
+  
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-const CaseSchema = new Schema<ICase>(
+const caseSchema = new Schema<ICase>(
   {
-    caseId: { type: String, required: true, unique: true },
-    title: { type: String, required: true },
-    description: { type: String, default: "" },
-    source: { type: String, default: "" },
-    assignedTo: { type: String, default: null },
-    status: { type: String, default: "RUNNING" },
-    crimeType: { type: String, default: "General" },
-    weapons: { type: [String], default: [] },
+    caseId: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+    },
+
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    description: {
+      type: String,
+      required: true,
+    },
+
+    source: {
+      type: String,
+      required: true,
+    },
+
+    assignedTo: {
+      type: String,
+      default: null,
+    },
+
+    status: {
+      type: String,
+      enum: ["PENDING", "RUNNING", "COMPLETED"],
+      default: "PENDING",
+    },
+
+    // NEW FIELDS
+    crimeType: {
+      type: String,
+      default: null,
+      trim: true,
+    },
+
+    weapons: {
+      type: [String],  // array of strings
+      default: [],
+    },
   },
-  { timestamps: true }
+  {
+    timestamps: true, // auto adds createdAt, updatedAt
+  }
 );
 
-export const Case =
-  (mongoose.models.Case as mongoose.Model<ICase>) ||
-  mongoose.model<ICase>("Case", CaseSchema);
+export const Case: Model<ICase> =
+  mongoose.models.Case || mongoose.model<ICase>("Case", caseSchema);

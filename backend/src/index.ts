@@ -1,4 +1,3 @@
-// backend/src/index.ts
 import express from "express";
 import cors from "cors";
 import jwt from "jsonwebtoken";
@@ -6,14 +5,9 @@ import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 
 import { connectDB } from "./db";
-import {
-  createUser,
-  findUserByEmail,
-  findUserById,
-} from "./userService";
-
+import { createUser, findUserByEmail, findUserById } from "./userService";
 import casesRouter from "./cases";
-import detectivesRouter from "./detectiveRoutes";
+import detectiveRouter from "./routes/detectiveRoutes";  // ⭐ ROUTER IMPORT
 
 dotenv.config();
 
@@ -22,21 +16,19 @@ const app = express();
 /* ---------------- GLOBAL MIDDLEWARE ---------------- */
 app.use(express.json());
 
-// ⭐ OVERRIDE CORS EXACTLY FOR FRONTEND (IMPORTANT)
-
-
 app.use(
   cors({
-    origin: "http://localhost:3000",   // your frontend
-    credentials: true,                 // REQUIRED for cookies/auth
+    origin: "http://localhost:3000",
+    credentials: true,
   })
 );
 
+// Manual headers (optional but safe)
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
   next();
 });
-
 
 /* ---------------- CONNECT TO DB ---------------- */
 connectDB();
@@ -47,7 +39,6 @@ const JWT_SECRET = process.env.JWT_SECRET as string;
 app.post("/auth/signup", async (req, res) => {
   try {
     const { name, email, password } = req.body;
-
     const user = await createUser(name, email, password);
 
     const token = jwt.sign({ id: user._id }, JWT_SECRET);
@@ -85,18 +76,23 @@ function authMiddleware(req: any, res: any, next: any) {
   }
 }
 
-/* ---------------- PROTECTED ROUTE ---------------- */
+/* ---------------- PROTECTED: CURRENT USER ---------------- */
 app.get("/me", authMiddleware, async (req: any, res) => {
   const user = await findUserById(req.userId);
-
   if (!user) return res.status(404).json({ error: "User not found" });
 
-  res.json({ id: user._id, name: user.name, email: user.email });
+  res.json({
+    id: user._id,
+    name: user.name,
+    email: user.email,
+  });
 });
 
 /* ---------------- NEW API ROUTES ---------------- */
 app.use("/api", casesRouter);
-app.use("/api", detectivesRouter);
+app.use("/api", detectiveRouter);
+
+/* ----------------------------------------------------- */
 
 /* ---------------- SERVER ---------------- */
 app.listen(8000, () => {
