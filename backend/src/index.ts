@@ -90,7 +90,7 @@ app.get("/me", authMiddleware, async (req: any, res) => {
 
 /* ---------------- NEW API ROUTES ---------------- */
 app.use("/api", casesRouter);
-app.use("/api", detectiveRouter);
+app.use("/api/detective", detectiveRouter);
 
 /* ----------------------------------------------------- */
 

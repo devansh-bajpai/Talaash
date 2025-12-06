@@ -16,5 +16,9 @@ router.patch("/my-cases/:caseId/status", updateMyCaseStatus);
 router.post("/similarity-search", createSimilaritySearch);
 router.get("/requests", getMyRequests);
 router.post("/requests", createRequest);
+router.post(
+    "/similarity-search",
+    createSimilaritySearch
+  );
 
 export default router;

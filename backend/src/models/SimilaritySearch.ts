@@ -1,39 +1,34 @@
-import mongoose, { Schema, Document } from "mongoose";
-
-export interface ISimilarityResult {
-  caseId: string;
-  title: string;
-  similarity: number; // 0–1
-}
+import mongoose, { Schema, Document, Model } from "mongoose";
 
 export interface ISimilaritySearch extends Document {
-  detectiveId: string;
-  caseId?: string;
-  description: string;
+  detectiveId: string;       // who made the search
+  description: string;       // text from the textarea
+  caseId?: string;           // optional case link
   createdAt: Date;
-  results: ISimilarityResult[];
+  updatedAt: Date;
 }
-
-const similarityResultSchema = new Schema<ISimilarityResult>(
-  {
-    caseId: { type: String, required: true },
-    title: { type: String, required: true },
-    similarity: { type: Number, required: true },
-  },
-  { _id: false }
-);
 
 const similaritySearchSchema = new Schema<ISimilaritySearch>(
   {
-    detectiveId: { type: String, required: true },
-    caseId: { type: String },
-    description: { type: String, required: true },
-    results: [similarityResultSchema],
+    detectiveId: {
+      type: String,
+      required: true,
+    },
+    description: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    caseId: {
+      type: String,
+      default: null,
+    },
   },
-  { timestamps: { createdAt: true, updatedAt: false } }
+  {
+    timestamps: true, // adds createdAt, updatedAt
+  }
 );
 
-export const SimilaritySearch = mongoose.model<ISimilaritySearch>(
-  "SimilaritySearch",
-  similaritySearchSchema
-);
+export const SimilaritySearch: Model<ISimilaritySearch> =
+  mongoose.models.SimilaritySearch ||
+  mongoose.model<ISimilaritySearch>("SimilaritySearch", similaritySearchSchema);

@@ -148,16 +148,43 @@ export default function DetectiveDashboardPage() {
     (r) => r.status === "PENDING"
   ).length;
 
-  function handleSimilaritySubmit(e: React.FormEvent) {
+  async function handleSimilaritySubmit(e: React.FormEvent) {
     e.preventDefault();
-    // for now, just generate dummy results based on current cases
-    const results: SimilarityResult[] = cases.map((c, index) => ({
-      caseId: c.caseId,
-      title: c.title,
-      similarity: 0.8 - index * 0.1, // fake scores
-    }));
-    setSimilarityResults(results);
+  
+    if (!similarityQuery.trim()) return;
+  
+    try {
+      const res = await fetch(`${API_BASE}/api/detective/similarity-search`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          // later: add Authorization header when you secure detective routes
+        },
+        body: JSON.stringify({
+          description: similarityQuery,
+          // optional: if you want to link with a particular case:
+          // caseId: "CASE-2025-001",
+        }),
+      });
+  
+      if (!res.ok) {
+        console.error("Failed to save similarity search:", await res.text());
+        return;
+      }
+  
+      const data = await res.json();
+      console.log("Saved similarity search:", data.search);
+  
+      // if you truly want "nothing else", don't set any results state.
+      // you can just clear the textarea:
+      setSimilarityQuery("");
+      // and optionally clear results if you were showing them:
+      setSimilarityResults([]);
+    } catch (err) {
+      console.error("Error sending similarity search:", err);
+    }
   }
+  
 
   // Handler: mark case as COMPLETED (frontend + backend)
   async function handleMarkCompleted(caseId: string) {
