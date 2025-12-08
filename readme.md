@@ -8,5 +8,3 @@ This project helps investigators find similar past criminal cases using FAISS-ba
 - backend/ – Express + TypeScript REST API
 - ml-service/ – Python + FAISS similarity search service
 - docs/ – Documentation and diagrams
-
---

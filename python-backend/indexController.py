@@ -11,6 +11,7 @@ def addToIndex(embedding):
     faiss.write_index(index, "data.index")
     return new_id
 
+# search for a index
 def searchIndex(embedding):
     index = getIndex()
     distances, idx = index.search(embedding, 5)
