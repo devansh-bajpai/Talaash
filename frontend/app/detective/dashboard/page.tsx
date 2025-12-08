@@ -102,7 +102,7 @@ export default function DetectiveDashboardPage() {
         setCasesLoading(true);
         setCasesError(null);
 
-        const res = await fetch(`${API_BASE}/api/detective/my-cases`, {
+        const res = await fetch(`${API_BASE}/api/my-cases`, {
           method: "GET",
         });
 
@@ -154,7 +154,7 @@ export default function DetectiveDashboardPage() {
     if (!similarityQuery.trim()) return;
   
     try {
-      const res = await fetch(`${API_BASE}/api/detective/similarity-search`, {
+      const res = await fetch(`${API_BASE}/api/similarity-search`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -209,7 +209,7 @@ export default function DetectiveDashboardPage() {
 
       // ✅ backend call (once your API exists) – right now can be left or used
       await fetch(
-        `${API_BASE}/api/detective/my-cases/${encodeURIComponent(
+        `${API_BASE}/api/my-cases/${encodeURIComponent(
           caseId
         )}/status`,
         {
