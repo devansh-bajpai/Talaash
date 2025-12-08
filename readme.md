@@ -9,3 +9,4 @@ This project helps investigators find similar past criminal cases using FAISS-ba
 - ml-service/ – Python + FAISS similarity search service
 - docs/ – Documentation and diagrams
 
+--
