@@ -1,6 +1,11 @@
-# Dev or Die (Avishkar'25) Project by Team AuraFarmers
+# Talaash – AI-Based Case Similarity & Insight Platform
 
-- Devansh Bajpai
-- Shreya Saxena
-- Anushka Gupta
-- Venu Verma
+This project helps investigators find similar past criminal cases using FAISS-based vector similarity search.
+
+## Structure
+
+- frontend/ – Next.js + TypeScript web UI
+- backend/ – Express + TypeScript REST API
+- ml-service/ – Python + FAISS similarity search service
+- docs/ – Documentation and diagrams
+
