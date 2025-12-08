@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    // where your .ts files live
+    "rootDir": "./src",
+    // where compiled .js files will be emitted
+    "outDir": "./dist",
+
+    // Node environment
+    "module": "commonjs",
+    "target": "ES2020",
+
+    // Node typings
+    "types": ["node"],
+
+    // Allow default imports from CommonJS modules like express, cors, etc.
+    "esModuleInterop": true,
+
+    // Other Outputs
+    "sourceMap": true,
+    "declaration": false,
+    "declarationMap": false,
+
+    // Stricter Typechecking
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+
+    // JSX support (in case you ever want TSX somewhere)
+    "jsx": "react-jsx",
+
+    // Performance / compatibility
+    "skipLibCheck": true
+  },
+  "include": ["src"]
+}
